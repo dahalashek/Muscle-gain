@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Muscle Track</title>
+<style>
+:root{--bg:#f4f4f6;--card:#fff;--text:#111;--muted:#777;--accent:#111;--ok:#238636}
+*{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",Arial;background:var(--bg);color:var(--text)}
+main{max-width:620px;margin:auto;padding:calc(18px + env(safe-area-inset-top)) 16px 100px}
+h1{font-size:30px;margin:8px 0 2px}.sub{color:var(--muted);margin-bottom:18px}
+.card{background:var(--card);border-radius:20px;padding:18px;margin:12px 0;box-shadow:0 1px 8px #0000000a}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center}.big{font-size:30px;font-weight:750}
+.progress{height:11px;background:#e8e8ea;border-radius:9px;overflow:hidden;margin:12px 0}.bar{height:100%;background:#111;width:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{background:#f5f5f7;border-radius:15px;padding:14px}.metric b{font-size:20px}
+button{border:0;border-radius:13px;padding:12px 14px;font-weight:650;font-size:15px;background:#111;color:white}
+button.secondary{background:#ededf0;color:#111}
+input{width:100%;font-size:17px;padding:12px;border:1px solid #ddd;border-radius:12px;background:#fff}
+label{display:block;font-size:13px;color:#666;margin:10px 0 5px}
+.workout div,.meal{padding:10px 0;border-bottom:1px solid #eee}.workout div:last-child,.meal:last-child{border:0}
+.check{display:flex;gap:10px;align-items:center}.check input{width:21px;height:21px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fffffff2;backdrop-filter:blur(12px);border-top:1px solid #ddd;padding:8px 8px calc(8px + env(safe-area-inset-bottom));display:flex;justify-content:center;gap:5px}
+nav button{background:transparent;color:#777;padding:10px;min-width:66px;font-size:12px}nav button.active{color:#111;background:#eee}
+.page{display:none}.page.active{display:block}.hint{font-size:13px;color:#777;line-height:1.4}
+canvas{width:100%;height:180px}
+</style></head>
+<body><main>
+<section id="today" class="page active">
+<h1>Muscle Track</h1><div class="sub" id="date"></div>
+<div class="card"><div class="row"><div><div class="hint">WEIGHT GOAL</div><div class="big"><span id="currentW">55.0</span> → 60 kg</div></div><button onclick="showPage('weight')">Log</button></div>
+<div class="progress"><div class="bar" id="goalBar"></div></div><div class="hint">First milestone: 58 kg • target gain 0.15–0.25 kg/week</div></div>
+<div class="grid"><div class="metric"><div class="hint">CALORIES</div><b><span id="cal">0</span> / 2400</b></div><div class="metric"><div class="hint">PROTEIN</div><b><span id="protein">0</span> / 115 g</b></div></div>
+<div class="card"><div class="row"><b>Today's workout</b><span id="workoutName"></span></div><div id="workout" class="workout"></div></div>
+<div class="card"><b>Meals</b><div id="mealChecks"></div></div>
+</section>
+
+<section id="food" class="page"><h1>Food</h1><div class="sub">Daily target: ~2,400 kcal • 110–120 g protein</div>
+<div class="card"><label>Calories to add</label><input id="addCal" type="number" inputmode="numeric" placeholder="e.g. 550"><label>Protein (g) to add</label><input id="addProtein" type="number" inputmode="decimal" placeholder="e.g. 30"><br><br><button onclick="addFood()">Add meal</button> <button class="secondary" onclick="resetFood()">Reset today</button></div>
+<div class="card"><b>Easy meal structure</b><p class="hint">Breakfast → post-workout meal → work lunch → work snack → dinner. You don't need to force huge meals; use your weekly weight trend to decide whether 2,400 kcal is enough.</p></div></section>
+
+<section id="weight" class="page"><h1>Weight</h1><div class="sub">Use morning measurements and watch the trend, not one day's number.</div>
+<div class="card"><label>Today's weight (kg)</label><input id="weightInput" type="number" step=".1" inputmode="decimal" placeholder="55.0"><br><br><button onclick="logWeight()">Save weight</button></div>
+<div class="card"><b>Recent weights</b><div id="weightList"></div></div></section>
+
+<section id="plan" class="page"><h1>Plan</h1><div class="sub">Built around your 12–8 PM shift and 30-minute commute.</div>
+<div class="card"><b>Gym days</b><p>Mon — Upper A<br>Tue — Lower A<br>Wed — Rest / meal prep<br>Thu — Upper B<br>Fri — Lower B<br>Sat/Sun — Recovery</p></div>
+<div class="card"><b>Workday rhythm</b><p class="hint">6:15 wake • 6:30 breakfast • 7:30–8:30 gym • 8:45 shower • 9:10 post-workout meal • 9:40 pack food • 11:15 leave • 12–8 work • ~2:30 meal • ~5:30 snack • 8:30 dinner • ~10:00 sleep.</p></div>
+<div class="card"><b>Adjustment rule</b><p class="hint">Aim for roughly 0.15–0.25 kg/week. If your weekly average isn't rising after 2–3 weeks, add about 150 kcal/day. If weight rises much faster for several weeks, reduce slightly.</p></div></section>
+</main>
+<nav><button class="active" data-p="today" onclick="showPage('today')">Today</button><button data-p="food" onclick="showPage('food')">Food</button><button data-p="weight" onclick="showPage('weight')">Weight</button><button data-p="plan" onclick="showPage('plan')">Plan</button></nav>
+<script>
+const workouts={
+1:["Upper A","Chest Press — 3×8–12","Lat Pulldown — 3×8–12","Incline DB Press — 3×8–12","Seated Row — 3×8–12","Lateral Raise — 3×12–15","Biceps Curl — 2×10–15","Triceps Pushdown — 2×10–15"],
+2:["Lower A","Smith Squat — 3×8–10","Romanian Deadlift — 3×8–10","Leg Press — 3×10–12","Leg Curl — 3×10–15","Calf Raise — 3×10–15"],
+4:["Upper B","Shoulder Press — 3×8–12","Lat Pulldown / Assisted Pull-up — 3×8–12","Chest Press — 3×8–12","Seated Row — 3×8–12","Lateral Raise — 3×12–15","Hammer Curl — 2×10–15","Triceps Extension — 2×10–15"],
+5:["Lower B","Leg Press — 3×8–12","Smith RDL — 3×8–10","Bulgarian Split Squat — 3×8–12/leg","Leg Extension — 3×10–15","Leg Curl — 3×10–15","Calf Raise — 3×10–15"]};
+const meals=["Breakfast","Post-workout meal","Work lunch","Work snack","Dinner"];
+let data=JSON.parse(localStorage.getItem("muscleTrack")||'{"cal":0,"protein":0,"weights":[],"mealDate":"","meals":[]}');
+function save(){localStorage.setItem("muscleTrack",JSON.stringify(data))}
+function dayKey(){return new Date().toISOString().slice(0,10)}
+function refresh(){
+ if(data.foodDate!==dayKey()){data.cal=0;data.protein=0;data.foodDate=dayKey()}
+ if(data.mealDate!==dayKey()){data.meals=[];data.mealDate=dayKey()}
+ document.getElementById("date").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
+ document.getElementById("cal").textContent=data.cal; document.getElementById("protein").textContent=data.protein;
+ let w=data.weights.length?data.weights[data.weights.length-1].w:55;
+ currentW.textContent=Number(w).toFixed(1); goalBar.style.width=Math.max(0,Math.min(100,(w-55)/5*100))+"%";
+ let wo=workouts[new Date().getDay()]; workoutName.textContent=wo?wo[0]:"Recovery";
+ workout.innerHTML=wo?wo.slice(1).map(x=>"<div>"+x+"</div>").join(""):"<div class='hint'>Rest, eat normally and recover.</div>";
+ mealChecks.innerHTML=meals.map((m,i)=>`<div class="meal check"><input type="checkbox" ${data.meals.includes(i)?"checked":""} onchange="toggleMeal(${i},this.checked)"><span>${m}</span></div>`).join("");
+ weightList.innerHTML=data.weights.slice(-10).reverse().map(x=>`<div class="meal row"><span>${x.d}</span><b>${Number(x.w).toFixed(1)} kg</b></div>`).join("")||"<p class='hint'>No entries yet.</p>"; save()
+}
+function showPage(p){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===p));document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x.dataset.p===p));refresh()}
+function addFood(){data.cal+=Number(addCal.value||0);data.protein+=Number(addProtein.value||0);addCal.value="";addProtein.value="";refresh()}
+function resetFood(){data.cal=0;data.protein=0;refresh()}
+function toggleMeal(i,on){data.meals=on?[...new Set([...data.meals,i])]:data.meals.filter(x=>x!==i);save()}
+function logWeight(){let w=Number(weightInput.value);if(!w)return;data.weights.push({d:new Date().toLocaleDateString(),w});weightInput.value="";refresh()}
+refresh();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script></body></html>
