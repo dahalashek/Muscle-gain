@@ -1,16 +1,14 @@
 {
-  "name": "Muscle Track",
-  "short_name": "MuscleTrack",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#f4f4f6",
-  "theme_color": "#111111",
-  "icons": [
-    {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    }
+  "name":"Muscle Track",
+  "short_name":"Muscle Track",
+  "description":"Muscle gain, meal planning, groceries, reminders and progress tracking",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#f4f4f6",
+  "theme_color":"#111111",
+  "icons":[
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
   ]
 }

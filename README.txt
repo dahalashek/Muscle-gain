@@ -1,25 +1,16 @@
-MUSCLE TRACK — iPhone PWA
+MUSCLE TRACK — iPhone PWA v3
 
-This is an installable web app made for iPhone.
+What is new:
+- Weekly meal builder with estimated calories/protein per day
+- Grocery list automatically calculated from selected meal servings
+- Practical "buy" quantities rounded to store-friendly amounts
+- Custom grocery items and shopping check-offs
+- Editable reminder times/toggles with iPhone Calendar (.ics) export
+- Data backup/export + import
+- Existing weight, calorie, protein, water and workout tracking retained
 
-To use it, the files must be hosted over HTTPS (service workers/PWA installation do not work properly from a local file).
-Easy options include GitHub Pages, Netlify, or another static web host.
-
-Once hosted:
-1. Open the HTTPS address in Safari on your iPhone.
-2. Tap Share.
-3. Tap "Add to Home Screen".
-4. Open Muscle Track from the new icon.
-
-Your entries are stored locally in Safari/iPhone storage.
-
-Current defaults:
-- Starting weight: 55 kg
-- Goal: 60 kg
-- First milestone: 58 kg
-- Calories: ~2400/day
-- Protein: 115 g/day
-- Gym: Mon/Tue/Thu/Fri
-- Work schedule: 12–8 PM
-
-Important: this first version does not send push notifications. Use iPhone Reminders for time-critical meal/gym reminders until a notification backend is added.
+To update GitHub Pages:
+1. Upload/replace all files in the repository root.
+2. Commit the changes to main.
+3. GitHub Pages redeploys automatically.
+4. On iPhone, reopen the installed app. If an old version remains, fully close and reopen it once or twice so the service worker updates.
